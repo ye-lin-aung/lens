@@ -1,0 +1,123 @@
+mod executor;
+mod process;
+mod monitor;
+mod linux;
+
+
+use clap::{ Parser}; 
+use executor::Executor;
+
+use indicatif::{ProgressBar, ProgressStyle};
+
+#[derive(Parser, Debug)]
+#[command(version, about, long_about = None)]
+struct Args {
+    #[arg(short, long, default_value_t = 0)]
+    warm: u8,
+
+    #[arg(required = true)]
+    commands: Vec<String>,
+}
+/// Command to use lens -w 3 "ruby a.rb" "another command to compare" 
+/// lens -w 3 "ruby"
+/// CPU, Memory, Network, Disk
+/// curl -s "asd | bash
+/// 
+/// lens rails server   
+/// 
+/// lens rails runner app/jobs/something.rb
+/// lens gzip file.txt
+/// CPU, Memory, Network, Disk  
+fn show_sys_info(){
+    println!("\n=== System Information ===");
+    
+    // CPU Info
+    // TODO: Support for physical core
+    let cpu = sys_info::cpu_num().unwrap_or(0);
+    let cpu_speed = sys_info::cpu_speed().unwrap_or(0);
+    println!("CPUs: {}  cores, {} at MHz", 
+    cpu, cpu_speed);
+    const GB_CONVERSION: f64 = 1024.0 * 1024.0;
+
+    // Memory Info
+    if let Ok(mem) = sys_info::mem_info() {
+        println!("Memory: {:.1} GB total, {:.1} GB free", 
+            mem.total as f64 / GB_CONVERSION,
+            mem.free as f64 / GB_CONVERSION
+        );
+    }
+
+    // Disk Info
+    if let Ok(disk) = sys_info::disk_info() {
+        println!("Disk: {:.1} GB total, {:.1} GB free",
+            disk.total as f64 / GB_CONVERSION,
+            disk.free as f64 / GB_CONVERSION
+        );
+    }
+
+    // OS Info
+    if let Ok(os) = sys_info::os_type() {
+        if let Ok(release) = sys_info::os_release() {
+            println!("\nOS: {} {}", os, release);
+        }
+    }
+
+    // Process Info
+    if let Ok(proc_total) = sys_info::proc_total() {
+        println!("Total Processes: {}", proc_total);
+    }
+
+    println!("=====================\n");
+}
+
+#[tokio::main]
+async fn main()  {
+    let args = Args::parse();
+
+    let mut processes = Vec::new();
+ 
+    show_sys_info();
+
+    for command in args.commands {
+        for _ in 0..args.warm {
+            let _ = Executor::new(command.clone()).execute();
+        }
+        processes.push(Executor::new(command).execute());
+    }
+    
+
+    for process in processes {
+        match process {
+            Ok(process) => println!("Process: {:?}", process),
+            Err(e) => println!("Error: {}", e),
+        }
+    }
+   
+}
+
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_args_default() {
+        let args = Args::try_parse_from(&["test", "ruby a.rb"]).unwrap();
+        assert_eq!(args.warm, 0);
+    }
+
+    #[test]
+    fn test_args_custom_warm() {
+        let args = Args::try_parse_from(&["test", "-w", "3", "ruby a.rb"]).unwrap();
+        assert_eq!(args.warm, 3);
+    }
+
+    #[test]
+    fn test_args_giving_multiple_commands() {
+        let args = Args::try_parse_from(&["test", "ruby a.rb", "another command to compare"]).unwrap();
+        assert_eq!(args.commands.len(), 2);
+        assert_eq!(args.commands[0], "ruby a.rb");
+        assert_eq!(args.commands[1], "another command to compare");
+    }
+}
+

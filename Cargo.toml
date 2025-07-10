@@ -1,0 +1,11 @@
+[package]
+name = "lens"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+clap = { version = "4.5.40", features = ["derive", "env", "unicode", "wrap_help", "string"] }
+indicatif = "0.18.0"
+tokio = { version = "1", features = ["full"] }
+shell-words = "1.1.0"
+sys-info = "0.9.1"
