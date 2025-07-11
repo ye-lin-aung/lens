@@ -53,11 +53,16 @@ impl Benchmark {
         let mut utimes = Vec::new();
         let mut stimes = Vec::new();
         let mut total_times = Vec::new();
+        let mut durations = Vec::new();
+
         for process in processes {
             memory_values.extend(process.stat.memory_kb);
             utimes.push(process.stat.utime);
             stimes.push(process.stat.utime);
             total_times.push(process.stat.total_time);
+            if let Some(duration) = process.duration {
+                durations.push(duration.as_secs_f64());
+            }
         }
         benchmark.average_memory = Self::average(memory_values.clone());
         benchmark.max_memory = Self::max(memory_values.clone());
@@ -70,6 +75,16 @@ impl Benchmark {
         benchmark.average_t = Self::average(total_times.clone());
         benchmark.max_t = Self::max(total_times.clone());
         benchmark.min_t = Self::min(total_times);
+
+        benchmark.average_duration = durations.iter().sum::<f64>() / durations.len() as f64;
+        benchmark.max_duration = *durations
+            .iter()
+            .max_by(|a, b| a.partial_cmp(b).unwrap())
+            .unwrap();
+        benchmark.min_duration = *durations
+            .iter()
+            .min_by(|a, b| a.partial_cmp(b).unwrap())
+            .unwrap();
 
         benchmark
     }
