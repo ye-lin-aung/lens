@@ -49,10 +49,8 @@ impl Executor {
        
       
         let status = tokio::spawn(async move {
-            let status = child.wait().await
+            child.wait().await
                 .expect("child process encountered an error");
-    
-            println!("child status was: {}", status);
         });
      
         let mut monitor = PollBased::new(1);
@@ -61,7 +59,6 @@ impl Executor {
                 let end_time = std::time::Instant::now();
                 process_info.end_time = Some(end_time);
                 process_info.duration = Some(end_time.duration_since(start_time));
-                // process_info.duration = process_info.start_time.unwrap_or(std::time::Instant::now()).;
                 break;
             }
             monitor.scan( process_info);

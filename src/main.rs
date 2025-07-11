@@ -2,18 +2,25 @@ mod executor;
 mod process;
 mod monitor;
 mod linux;
+mod benchmark;
 
 
 use clap::{ Parser}; 
 use executor::Executor;
+use crate::process::ProcessInfo;
 
 use indicatif::{ProgressBar, ProgressStyle};
+
+use crate::benchmark::Benchmark;
 
 #[derive(Parser, Debug)]
 #[command(version, about, long_about = None)]
 struct Args {
     #[arg(short, long, default_value_t = 0)]
     warm: u8,
+
+    #[arg(short, long, default_value_t = 5)]
+    iter: u8,
 
     #[arg(required = true)]
     commands: Vec<String>,
@@ -82,16 +89,17 @@ async fn main()  {
         for _ in 0..args.warm {
             let _ = Executor::new(command.clone()).execute();
         }
-        processes.push(Executor::new(command).execute());
-    }
-    
-
-    for process in processes {
-        match process {
-            Ok(process) => println!("Process: {:?}", process),
-            Err(e) => println!("Error: {}", e),
+        for _ in 0..args.iter {
+            processes.push(Executor::new(command.clone()).execute());
         }
     }
+
+    let processes: Vec<ProcessInfo> = processes.into_iter()
+        .filter_map(|p| p.ok())
+        .collect();
+    let benchmark = Benchmark::calculate(processes.clone());
+    println!("Benchmark stat {:?}", benchmark);
+
    
 }
 
@@ -110,6 +118,12 @@ mod tests {
     fn test_args_custom_warm() {
         let args = Args::try_parse_from(&["test", "-w", "3", "ruby a.rb"]).unwrap();
         assert_eq!(args.warm, 3);
+    }
+
+    #[test]
+    fn test_args_custom_iter() {
+        let args = Args::try_parse_from(&["test", "-i", "5", "ruby a.rb"]).unwrap();
+        assert_eq!(args.iter, 5);
     }
 
     #[test]
