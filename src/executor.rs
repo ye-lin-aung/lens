@@ -1,11 +1,8 @@
 use crate::linux::PollBased;
 use crate::monitor::Monitor;
 use crate::process::ProcessInfo;
-use crate::process::Stat;
-use shell_words;
 use std::process::Stdio;
 use tokio::process::{Child, Command};
-use tokio::time::Instant;
 
 pub struct Executor {
     command: String,

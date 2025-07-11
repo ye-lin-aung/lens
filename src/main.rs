@@ -8,7 +8,6 @@ use crate::process::ProcessInfo;
 use clap::Parser;
 use executor::Executor;
 
-use indicatif::{ProgressBar, ProgressStyle};
 
 use crate::benchmark::Benchmark;
 
@@ -105,26 +104,26 @@ mod tests {
 
     #[test]
     fn test_args_default() {
-        let args = Args::try_parse_from(&["test", "ruby a.rb"]).unwrap();
+        let args = Args::try_parse_from(["test", "ruby a.rb"]).unwrap();
         assert_eq!(args.warm, 0);
     }
 
     #[test]
     fn test_args_custom_warm() {
-        let args = Args::try_parse_from(&["test", "-w", "3", "ruby a.rb"]).unwrap();
+        let args = Args::try_parse_from(["test", "-w", "3", "ruby a.rb"]).unwrap();
         assert_eq!(args.warm, 3);
     }
 
     #[test]
     fn test_args_custom_iter() {
-        let args = Args::try_parse_from(&["test", "-i", "5", "ruby a.rb"]).unwrap();
+        let args = Args::try_parse_from(["test", "-i", "5", "ruby a.rb"]).unwrap();
         assert_eq!(args.iter, 5);
     }
 
     #[test]
     fn test_args_giving_multiple_commands() {
         let args =
-            Args::try_parse_from(&["test", "ruby a.rb", "another command to compare"]).unwrap();
+            Args::try_parse_from(["test", "ruby a.rb", "another command to compare"]).unwrap();
         assert_eq!(args.commands.len(), 2);
         assert_eq!(args.commands[0], "ruby a.rb");
         assert_eq!(args.commands[1], "another command to compare");
