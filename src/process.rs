@@ -11,15 +11,43 @@ pub struct ProcessInfo {
    pub duration: Option<Duration>,
    pub(crate) stat: Stat,
 }
-
+impl ProcessInfo {
+   pub(crate) fn new() -> Self {
+      ProcessInfo {
+         pid: 0,
+         command: None,
+         args: vec![],
+         status: Some(0),
+         start_time: None,
+         end_time: None,
+         duration: None, //end_time.duration_since(start_time),
+         stat: Stat::new()
+     }  
+   }
+}
 #[derive(Debug, Clone)]
 pub(crate) struct Stat {
    pub(crate) read_bytes: Vec<u64>,
    pub(crate) write_bytes: Vec<u64>,
    pub(crate) received: Vec<u64>,
    pub(crate) transmitted: Vec<u64>,
-   pub(crate) utime: Vec<u64>,
-   pub(crate) stime: Vec<u64>,
+   pub(crate) utime: u64,
+   pub(crate) stime: u64,
    pub(crate) memory_kb: Vec<u64>,
-   pub(crate) total_time: Vec<u64>,
+   pub(crate) total_time: u64,
+}
+
+impl Stat {
+   pub(crate) fn new() -> Self {
+      Stat {
+         read_bytes: vec![],
+         write_bytes: vec![],
+         received: vec![],
+         transmitted: vec![],
+         utime: 0,
+         stime: 0,
+         memory_kb: vec![],
+         total_time: 0,
+     }
+   }
 }

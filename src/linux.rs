@@ -42,9 +42,9 @@ impl Monitor for PollBased {
                     let stime = fields[14].parse::<u64>().unwrap_or(0);
                     let total_time = utime + stime;
                     
-                    process_info.stat.utime.push(utime);
-                    process_info.stat.stime.push(stime);
-                    process_info.stat.total_time.push(total_time);               
+                    process_info.stat.utime += utime;
+                    process_info.stat.stime += stime;
+                    process_info.stat.total_time += total_time;               
                 }
             }
         }
@@ -128,10 +128,10 @@ mod tests {
                 write_bytes: vec![],
                 received: vec![],
                 transmitted: vec![],
-                utime: vec![],
-                stime: vec![],
+                utime: 0,
+                stime: 0,
                 memory_kb: vec![],
-                total_time: vec![],
+                total_time: 0,
             },
         };
         monitor.read_disk_usage(&mut process_info);
@@ -155,10 +155,10 @@ mod tests {
                 write_bytes: vec![],
                 received: vec![],
                 transmitted: vec![],
-                utime: vec![],
-                stime: vec![],
+                utime: 0,
+                stime: 0,
                 memory_kb: vec![],
-                total_time: vec![],
+                total_time: 0,
             },
         };
         monitor.read_disk_usage(&mut process_info);
@@ -182,10 +182,10 @@ mod tests {
                 write_bytes: vec![],
                 received: vec![],
                 transmitted: vec![],
-                utime: vec![],
-                stime: vec![],
+                utime: 0,
+                stime: 0,
                 memory_kb: vec![],
-                total_time: vec![],
+                total_time: 0,
             },
         };
         monitor.read_network_usage(&mut process_info);
@@ -210,10 +210,10 @@ mod tests {
                 write_bytes: vec![],
                 received: vec![],
                 transmitted: vec![],
-                utime: vec![],
-                stime: vec![],
+                utime: 0,
+                stime: 0,
                 memory_kb: vec![],
-                total_time: vec![],
+                total_time: 0,
             },
         };
         // Take multiple readings
@@ -239,16 +239,7 @@ mod tests {
             start_time: None,
             end_time: None,
             duration: None,
-            stat: Stat {
-                read_bytes: vec![],
-                write_bytes: vec![],
-                received: vec![],
-                transmitted: vec![],
-                utime: vec![],
-                stime: vec![],
-                memory_kb: vec![],
-                total_time: vec![],
-            },
+            stat: Stat::new(),
         };
         monitor.read_cpu_usage(&mut process_info);
         monitor.read_memory_usage(&mut process_info);
@@ -257,7 +248,7 @@ mod tests {
         // Should handle nonexistent PID gracefully without panicking
    
         assert!(process_info.stat.memory_kb.is_empty());
-        assert!(process_info.stat.total_time.is_empty());
+        assert!(process_info.stat.total_time > 0);
     }
 
     #[test]
@@ -269,25 +260,7 @@ mod tests {
     #[test]
     fn test_read_cpu_usage() {
         let mut monitor = PollBased::new(std::process::id());
-        let mut process_info = ProcessInfo {
-            pid: 0,
-            command: None,
-            args: vec![],
-            status: None,
-            start_time: None,
-            end_time: None,
-            duration: None,
-            stat: Stat {
-                read_bytes: vec![],
-                write_bytes: vec![],
-                received: vec![],
-                transmitted: vec![],
-                utime: vec![],
-                stime: vec![],
-                memory_kb: vec![],
-                total_time: vec![],
-            },
-        };
+        let mut process_info =   ProcessInfo::new();
         monitor.read_cpu_usage(&mut process_info);
         // Since we're reading our own process, this should execute without panicking
     }
@@ -295,25 +268,7 @@ mod tests {
     #[test]
     fn test_read_memory_usage() {
         let mut monitor = PollBased::new(std::process::id());
-        let mut process_info = ProcessInfo {
-            pid: 0,
-            command: None,
-            args: vec![],
-            status: None,
-            start_time: None,
-            end_time: None,
-            duration: None,
-            stat: Stat {
-                read_bytes: vec![],
-                write_bytes: vec![],
-                received: vec![],
-                transmitted: vec![],
-                utime: vec![],
-                stime: vec![],
-                memory_kb: vec![],
-                total_time: vec![],
-            },
-        };
+        let mut process_info =  ProcessInfo::new();
         monitor.read_memory_usage(&mut process_info);
         // Since we're reading our own process, this should execute without panicking
     }
@@ -321,25 +276,7 @@ mod tests {
     #[test]
     fn test_read_network_usage() {
         let mut monitor = PollBased::new(std::process::id());
-        let mut process_info = ProcessInfo {
-            pid: 0,
-            command: None,
-            args: vec![],
-            status: None,
-            start_time: None,
-            end_time: None,
-            duration: None,
-            stat: Stat {
-                read_bytes: vec![],
-                write_bytes: vec![],
-                received: vec![],
-                transmitted: vec![],
-                utime: vec![],
-                stime: vec![],
-                memory_kb: vec![],
-                total_time: vec![],
-            },
-        };
+        let mut process_info =   ProcessInfo::new();
         monitor.read_network_usage(&mut process_info);
         // Since we're reading our own process, this should execute without panicking
     }
@@ -347,25 +284,7 @@ mod tests {
     #[test]
     fn test_read_disk_usage() {
         let mut monitor = PollBased::new(std::process::id());
-        let mut process_info = ProcessInfo {
-            pid: 0,
-            command: None,
-            args: vec![],
-            status: None,
-            start_time: None,
-            end_time: None,
-            duration: None,
-            stat: Stat {
-                read_bytes: vec![],
-                write_bytes: vec![],
-                received: vec![],
-                transmitted: vec![],
-                utime: vec![],
-                stime: vec![],
-                memory_kb: vec![],
-                total_time: vec![],
-            },
-        };
+        let mut process_info = ProcessInfo::new();
         monitor.read_disk_usage(&mut process_info);
         // Since we're reading our own process, this should execute without panicking
     }
@@ -373,25 +292,7 @@ mod tests {
     #[test]
     fn test_invalid_pid() {
         let mut monitor = PollBased::new(0);
-        let mut process_info = ProcessInfo {
-            pid: 0,
-            command: None,
-            args: vec![],
-            status: None,
-            start_time: None,
-            end_time: None,
-            duration: None,
-            stat: Stat {
-                read_bytes: vec![],
-                write_bytes: vec![],
-                received: vec![],
-                transmitted: vec![],
-                utime: vec![],
-                stime: vec![],
-                memory_kb: vec![],
-                total_time: vec![],
-            },
-        };
+        let mut process_info = ProcessInfo::new();
         monitor.read_cpu_usage(&mut process_info); // Should handle invalid PID gracefully
         monitor.read_memory_usage(&mut process_info);
         monitor.read_network_usage(&mut process_info);

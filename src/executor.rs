@@ -36,33 +36,12 @@ impl Executor {
         .map_err(|e| format!("Failed to spawn process: {}", e))?;
         
   
-        let mut process_info = self.init_info();
+        let mut process_info = ProcessInfo::new();
         self.run(child, &mut process_info);   
         Ok(process_info.clone())
     }
 
-    fn init_info(&self) -> ProcessInfo {
-        return ProcessInfo {
-            pid: 0,
-            command: None,
-            args: vec![],
-            status: Some(0),
-            start_time: None,
-            end_time: None,
-            duration: None, //end_time.duration_since(start_time),
-            stat: Stat {
-                read_bytes: vec![],
-                write_bytes: vec![],
-                received: vec![],
-                transmitted: vec![],
-                utime: vec![],
-                stime: vec![],
-                memory_kb: vec![],
-                total_time: vec![],
-            },
-        };  
-    }
-
+ 
      fn run(&self, mut child: Child, process_info: &mut ProcessInfo){
         process_info.pid = child.id().unwrap_or(0);
         let start_time = std::time::Instant::now();
