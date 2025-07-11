@@ -1,5 +1,4 @@
 use crate::process::ProcessInfo;
-use std::cmp;
 pub(crate) struct Benchmark;
 
 #[derive(Debug)]
@@ -80,10 +79,10 @@ impl Benchmark {
     }
 
     fn max(nums: Vec<u64>) -> f64 {
-        nums.iter().max().unwrap().clone() as f64
+        *nums.iter().max().unwrap() as f64
     }
 
     fn min(nums: Vec<u64>) -> f64 {
-        nums.iter().min().unwrap().clone() as f64
+        *nums.iter().min().unwrap() as f64
     }
 }

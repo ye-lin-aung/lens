@@ -11,23 +11,17 @@ const CGROUP_CONTROLLER_PATH: &str = "cgroup.controllers";
 const MAX_PATH: usize = 256;
 const MAX_BUFFER: usize = 4096;
 
-
 struct CgroupV2 {
     pid: u32,
-    
 }
 
 pub(crate) struct PollBased {
     pid: u32,
-    
 }
 
 impl Monitor for PollBased {
     fn new(pid: u32) -> Self {
-        Self {
-            pid,
-            
-        }
+        Self { pid }
     }
 
     fn read_cpu_usage(&mut self, process_info: &mut ProcessInfo) {
@@ -41,10 +35,10 @@ impl Monitor for PollBased {
                     let utime = fields[13].parse::<u64>().unwrap_or(0);
                     let stime = fields[14].parse::<u64>().unwrap_or(0);
                     let total_time = utime + stime;
-                    
+
                     process_info.stat.utime += utime;
                     process_info.stat.stime += stime;
-                    process_info.stat.total_time += total_time;               
+                    process_info.stat.total_time += total_time;
                 }
             }
         }
@@ -174,7 +168,7 @@ mod tests {
         monitor.read_network_usage(&mut process_info);
         monitor.read_disk_usage(&mut process_info);
         // Should handle nonexistent PID gracefully without panicking
-   
+
         assert!(process_info.stat.memory_kb.is_empty());
         assert!(process_info.stat.total_time > 0);
     }
@@ -188,7 +182,7 @@ mod tests {
     #[test]
     fn test_read_cpu_usage() {
         let mut monitor = PollBased::new(std::process::id());
-        let mut process_info =   ProcessInfo::new();
+        let mut process_info = ProcessInfo::new();
         monitor.read_cpu_usage(&mut process_info);
         // Since we're reading our own process, this should execute without panicking
     }
@@ -196,7 +190,7 @@ mod tests {
     #[test]
     fn test_read_memory_usage() {
         let mut monitor = PollBased::new(std::process::id());
-        let mut process_info =  ProcessInfo::new();
+        let mut process_info = ProcessInfo::new();
         monitor.read_memory_usage(&mut process_info);
         // Since we're reading our own process, this should execute without panicking
     }
@@ -204,7 +198,7 @@ mod tests {
     #[test]
     fn test_read_network_usage() {
         let mut monitor = PollBased::new(std::process::id());
-        let mut process_info =   ProcessInfo::new();
+        let mut process_info = ProcessInfo::new();
         monitor.read_network_usage(&mut process_info);
         // Since we're reading our own process, this should execute without panicking
     }
