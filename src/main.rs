@@ -84,17 +84,75 @@ async fn main() {
     show_sys_info();
 
     for command in args.commands {
+        let mut command_processes = Vec::new();
         for _ in 0..args.warm {
             let _ = Executor::new(command.clone()).execute();
         }
         for _ in 0..args.iter {
-            processes.push(Executor::new(command.clone()).execute());
+            command_processes.push(Executor::new(command.clone()).execute());
         }
+        processes.push(command_processes);
     }
 
-    let processes: Vec<ProcessInfo> = processes.into_iter().filter_map(|p| p.ok()).collect();
-    let benchmark = Benchmark::calculate(processes.clone());
-    println!("Benchmark stat {:?}", benchmark);
+    for command_processes in processes {
+        let processes: Vec<ProcessInfo> = command_processes
+            .into_iter()
+            .filter_map(|p| p.ok())
+            .collect();
+        // Need to fix this to calculate each process
+        let mut benchmarks = Vec::new();
+        for process in processes {
+            let command = process.command.clone();
+            let args = process.args.join(" ");
+            println!("\nCommand: {}", command);
+            println!("Arguments: {}", args);
+            benchmarks.push(Benchmark::calculate(process));
+            println!("\nBenchmark Statistics:");
+            println!("---------------------");
+            println!("CPU Usage:");
+            println!(
+                "  User Time:   {:.1}% (min: {:.2}ms, avg: {:.2}ms, max: {:.2}ms)",
+                benchmarks.last().unwrap().utime_percentage,
+                benchmarks.last().unwrap().min_utime,
+                benchmarks.last().unwrap().average_utime,
+                benchmarks.last().unwrap().max_utime
+            );
+            println!(
+                "  System Time: {:.1}% (min: {:.2}ms, avg: {:.2}ms, max: {:.2}ms)",
+                benchmarks.last().unwrap().stime_percentage,
+                benchmarks.last().unwrap().min_stime,
+                benchmarks.last().unwrap().average_stime,
+                benchmarks.last().unwrap().max_stime
+            );
+            println!("\nMemory Usage:");
+            println!(
+                "  Min:     {:.1} MB",
+                benchmarks.last().unwrap().min_memory / 1024.0
+            );
+            println!(
+                "  Average: {:.1} MB",
+                benchmarks.last().unwrap().average_memory / 1024.0
+            );
+            println!(
+                "  Max:     {:.1} MB",
+                benchmarks.last().unwrap().max_memory / 1024.0
+            );
+            println!("\nExecution Time:");
+            println!(
+                "  Min:     {:.3} sec",
+                benchmarks.last().unwrap().min_duration
+            );
+            println!(
+                "  Average: {:.3} sec",
+                benchmarks.last().unwrap().average_duration
+            );
+            println!(
+                "  Max:     {:.3} sec",
+                benchmarks.last().unwrap().max_duration
+            );
+            println!("---------------------\n");
+        }
+    }
 }
 
 #[cfg(test)]

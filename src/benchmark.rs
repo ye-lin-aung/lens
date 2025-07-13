@@ -3,24 +3,24 @@ pub(crate) struct Benchmark;
 
 #[derive(Debug)]
 pub(crate) struct BenchmarkStat {
-    min_ttime: f64,
-    max_ttime: f64,
-    average_ttime: f64,
-    average_duration: f64,
-    max_duration: f64,
-    min_duration: f64,
-    min_stime: f64,
-    max_stime: f64,
-    average_stime: f64,
-    min_utime: f64,
-    max_utime: f64,
-    average_utime: f64,
-    min_memory: f64,
-    max_memory: f64,
-    average_memory: f64,
-    utime_percentage: f64,
-    stime_percentage: f64,
-    ttime_percentage: f64,
+    pub(crate) min_ttime: f64,
+    pub(crate) max_ttime: f64,
+    pub(crate) average_ttime: f64,
+    pub(crate) average_duration: f64,
+    pub(crate) max_duration: f64,
+    pub(crate) min_duration: f64,
+    pub(crate) min_stime: f64,
+    pub(crate) max_stime: f64,
+    pub(crate) average_stime: f64,
+    pub(crate) min_utime: f64,
+    pub(crate) max_utime: f64,
+    pub(crate) average_utime: f64,
+    pub(crate) min_memory: f64,
+    pub(crate) max_memory: f64,
+    pub(crate) average_memory: f64,
+    pub(crate) utime_percentage: f64,
+    pub(crate) stime_percentage: f64,
+    pub(crate) ttime_percentage: f64,
 }
 
 impl BenchmarkStat {
@@ -58,7 +58,7 @@ impl BenchmarkStat {
 // pub(crate) total_time: u64,
 // }
 impl Benchmark {
-    pub(crate) fn calculate(processes: Vec<ProcessInfo>) -> BenchmarkStat {
+    pub(crate) fn calculate(process: ProcessInfo) -> BenchmarkStat {
         let mut benchmark = BenchmarkStat::new();
 
         let mut memory_values = Vec::new();
@@ -67,15 +67,15 @@ impl Benchmark {
         let mut total_times = Vec::new();
         let mut durations = Vec::new();
 
-        for process in processes {
-            memory_values.extend(process.stat.memory_kb);
-            utimes.push(process.stat.utime);
-            stimes.push(process.stat.stime);
-            total_times.push(process.stat.total_time);
-            if let Some(duration) = process.duration {
-                durations.push(duration.as_secs_f64());
-            }
+        // for process in processes {
+        memory_values.extend(process.stat.memory_kb);
+        utimes.push(process.stat.utime);
+        stimes.push(process.stat.stime);
+        total_times.push(process.stat.total_time);
+        if let Some(duration) = process.duration {
+            durations.push(duration.as_secs_f64());
         }
+        // }
         benchmark.average_memory = Self::average(memory_values.clone());
         benchmark.max_memory = Self::max(memory_values.clone());
         benchmark.min_memory = Self::min(memory_values);
@@ -137,7 +137,7 @@ mod tests {
         memory: Vec<u64>,
         duration_secs: u64,
     ) -> ProcessInfo {
-        let mut process = ProcessInfo::new();
+        let mut process = ProcessInfo::new(String::from("ls"), vec![]);
         process.stat.utime = utime;
         process.stat.stime = stime;
         process.stat.memory_kb = memory;
@@ -151,9 +151,7 @@ mod tests {
     #[test]
     fn test_calculate_single_process() {
         let process = create_test_process(100, 50, vec![1000, 2000, 3000], 5);
-        let processes = vec![process];
-
-        let stats = Benchmark::calculate(processes);
+        let stats = Benchmark::calculate(process);
 
         assert_eq!(stats.average_utime, 100.0);
         assert_eq!(stats.average_stime, 50.0);
@@ -165,25 +163,20 @@ mod tests {
 
     #[test]
     fn test_calculate_multiple_processes() {
-        let process1 = create_test_process(100, 50, vec![1000], 5);
-        let process2 = create_test_process(200, 100, vec![2000], 10);
-        let processes = vec![process1, process2];
-
-        let stats = Benchmark::calculate(processes);
+        let process = create_test_process(150, 75, vec![1500], 7);
+        let stats = Benchmark::calculate(process);
 
         assert_eq!(stats.average_utime, 150.0);
         assert_eq!(stats.average_stime, 75.0);
-        assert_eq!(stats.min_utime, 100.0);
-        assert_eq!(stats.max_utime, 200.0);
-        assert_eq!(stats.average_duration, 7.5);
+        assert_eq!(stats.min_utime, 150.0);
+        assert_eq!(stats.max_utime, 150.0);
+        assert_eq!(stats.average_duration, 7.0);
     }
 
     #[test]
     fn test_cpu_percentages() {
         let process = create_test_process(75, 25, vec![1000], 5);
-        let processes = vec![process];
-
-        let stats = Benchmark::calculate(processes);
+        let stats = Benchmark::calculate(process);
 
         assert_eq!(stats.utime_percentage, 75.0);
         assert_eq!(stats.stime_percentage, 25.0);

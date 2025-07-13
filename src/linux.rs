@@ -110,7 +110,7 @@ mod tests {
     #[test]
     fn test_read_bytes_parsing() {
         let mut monitor = PollBased::new(std::process::id());
-        let mut process_info = ProcessInfo::new();
+        let mut process_info = ProcessInfo::new(String::from("test"), vec![]);
         monitor.read_disk_usage(&mut process_info);
         // Verify read_bytes vector is populated
         assert!(!process_info.stat.read_bytes.is_empty());
@@ -119,7 +119,7 @@ mod tests {
     #[test]
     fn test_write_bytes_parsing() {
         let mut monitor = PollBased::new(std::process::id());
-        let mut process_info = ProcessInfo::new();
+        let mut process_info = ProcessInfo::new(String::from("test"), vec![]);
         monitor.read_disk_usage(&mut process_info);
         // Verify write_bytes vector is populated
         assert!(!process_info.stat.write_bytes.is_empty());
@@ -128,7 +128,7 @@ mod tests {
     #[test]
     fn test_network_stats_parsing() {
         let mut monitor = PollBased::new(std::process::id());
-        let mut process_info = ProcessInfo::new();
+        let mut process_info = ProcessInfo::new(String::from("ls"), vec![]);
         monitor.read_network_usage(&mut process_info);
         // Verify network stats vectors are populated
         assert!(!process_info.stat.received.is_empty());
@@ -138,7 +138,7 @@ mod tests {
     #[test]
     fn test_multiple_readings() {
         let mut monitor = PollBased::new(std::process::id());
-        let mut process_info = ProcessInfo::new();
+        let mut process_info = ProcessInfo::new(String::from("ls"), vec![]);
         // Take multiple readings
         for _ in 0..3 {
             monitor.read_cpu_usage(&mut process_info);
@@ -154,16 +154,7 @@ mod tests {
     #[test]
     fn test_nonexistent_pid() {
         let mut monitor = PollBased::new(u32::MAX);
-        let mut process_info = ProcessInfo {
-            pid: 0,
-            command: None,
-            args: vec![],
-            status: None,
-            start_time: None,
-            end_time: None,
-            duration: None,
-            stat: Stat::new(),
-        };
+        let mut process_info = ProcessInfo::new(String::from("test"), vec![]);
         monitor.read_cpu_usage(&mut process_info);
         monitor.read_memory_usage(&mut process_info);
         monitor.read_network_usage(&mut process_info);
@@ -183,7 +174,7 @@ mod tests {
     #[test]
     fn test_read_cpu_usage() {
         let mut monitor = PollBased::new(std::process::id());
-        let mut process_info = ProcessInfo::new();
+        let mut process_info = ProcessInfo::new(String::from("test"), vec![]);
         monitor.read_cpu_usage(&mut process_info);
         // Since we're reading our own process, this should execute without panicking
     }
@@ -191,7 +182,7 @@ mod tests {
     #[test]
     fn test_read_memory_usage() {
         let mut monitor = PollBased::new(std::process::id());
-        let mut process_info = ProcessInfo::new();
+        let mut process_info = ProcessInfo::new(String::from("test"), vec![]);
         monitor.read_memory_usage(&mut process_info);
         // Since we're reading our own process, this should execute without panicking
     }
@@ -199,7 +190,7 @@ mod tests {
     #[test]
     fn test_read_network_usage() {
         let mut monitor = PollBased::new(std::process::id());
-        let mut process_info = ProcessInfo::new();
+        let mut process_info = ProcessInfo::new(String::from("test"), vec![]);
         monitor.read_network_usage(&mut process_info);
         // Since we're reading our own process, this should execute without panicking
     }
@@ -207,7 +198,7 @@ mod tests {
     #[test]
     fn test_read_disk_usage() {
         let mut monitor = PollBased::new(std::process::id());
-        let mut process_info = ProcessInfo::new();
+        let mut process_info = ProcessInfo::new(String::from("test"), vec![]);
         monitor.read_disk_usage(&mut process_info);
         // Since we're reading our own process, this should execute without panicking
     }
@@ -215,7 +206,7 @@ mod tests {
     #[test]
     fn test_invalid_pid() {
         let mut monitor = PollBased::new(0);
-        let mut process_info = ProcessInfo::new();
+        let mut process_info = ProcessInfo::new(String::from("test"), vec![]);
         monitor.read_cpu_usage(&mut process_info); // Should handle invalid PID gracefully
         monitor.read_memory_usage(&mut process_info);
         monitor.read_network_usage(&mut process_info);

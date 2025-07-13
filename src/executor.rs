@@ -30,7 +30,7 @@ impl Executor {
             .spawn()
             .map_err(|e| format!("Failed to spawn process: {}", e))?;
 
-        let mut process_info = ProcessInfo::new();
+        let mut process_info = ProcessInfo::new(program, args);
         self.run(child, &mut process_info);
         Ok(process_info.clone())
     }
@@ -67,7 +67,7 @@ mod tests {
     async fn test_execute() {
         let executor = Executor::new("echo 'Hello, world!'".to_string());
         let process_info = executor.execute().unwrap();
-        assert_eq!(process_info.command, Some("echo".to_string()));
+        assert_eq!(process_info.command, "echo");
         assert_eq!(process_info.args, vec!["Hello, world!"]);
         assert_eq!(process_info.status, Some(0));
         std::process::exit(0);
@@ -77,7 +77,7 @@ mod tests {
     async fn test_execute_with_args() {
         let executor = Executor::new("echo 'Hello, world!'".to_string());
         let process_info = executor.execute().unwrap();
-        assert_eq!(process_info.command, Some("echo".to_string()));
+        assert_eq!(process_info.command, "echo");
         assert_eq!(process_info.args, vec!["Hello, world!"]);
         assert_eq!(process_info.status, Some(0));
 

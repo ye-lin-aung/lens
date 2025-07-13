@@ -3,7 +3,7 @@ use std::time::{Duration, Instant};
 #[derive(Debug, Clone)]
 pub struct ProcessInfo {
     pub pid: u32,
-    pub command: Option<String>,
+    pub command: String,
     pub args: Vec<String>,
     pub status: Option<i32>,
     pub start_time: Option<Instant>,
@@ -12,11 +12,11 @@ pub struct ProcessInfo {
     pub(crate) stat: Stat,
 }
 impl ProcessInfo {
-    pub(crate) fn new() -> Self {
+    pub(crate) fn new(command: String, args: Vec<String>) -> Self {
         ProcessInfo {
             pid: 0,
-            command: None,
-            args: vec![],
+            command: command,
+            args: args,
             status: Some(0),
             start_time: None,
             end_time: None,
