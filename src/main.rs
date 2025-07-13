@@ -8,7 +8,6 @@ use crate::process::ProcessInfo;
 use clap::Parser;
 use executor::Executor;
 
-
 use crate::benchmark::Benchmark;
 
 #[derive(Parser, Debug)]

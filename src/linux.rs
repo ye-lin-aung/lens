@@ -36,9 +36,10 @@ impl Monitor for PollBased {
                     let stime = fields[14].parse::<u64>().unwrap_or(0);
                     let total_time = utime + stime;
 
-                    process_info.stat.utime += utime;
-                    process_info.stat.stime += stime;
-                    process_info.stat.total_time += total_time;
+                    // Store individual readings rather than accumulating
+                    process_info.stat.utime = utime;
+                    process_info.stat.stime = stime;
+                    process_info.stat.total_time = total_time;
                 }
             }
         }

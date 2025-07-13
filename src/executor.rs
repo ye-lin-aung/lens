@@ -47,7 +47,7 @@ impl Executor {
                 .expect("child process encountered an error");
         });
 
-        let mut monitor = PollBased::new(1);
+        let mut monitor = PollBased::new(process_info.pid);
         loop {
             if status.is_finished() {
                 let end_time = std::time::Instant::now();
