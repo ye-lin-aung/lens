@@ -101,57 +101,35 @@ async fn main() {
             .collect();
         // Need to fix this to calculate each process
         let mut benchmarks = Vec::new();
+        let first_process = &processes[0];
+        let command = first_process.command.clone();
+        let args = first_process.args.join(" ");
+        println!("\nCommand: {}", command);
+        println!("Arguments: {}", args);
         for process in processes {
-            let command = process.command.clone();
-            let args = process.args.join(" ");
-            println!("\nCommand: {}", command);
-            println!("Arguments: {}", args);
-            benchmarks.push(Benchmark::calculate(process));
-            println!("\nBenchmark Statistics:");
-            println!("---------------------");
-            println!("CPU Usage:");
-            println!(
-                "  User Time:   {:.1}% (min: {:.2}ms, avg: {:.2}ms, max: {:.2}ms)",
-                benchmarks.last().unwrap().utime_percentage,
-                benchmarks.last().unwrap().min_utime,
-                benchmarks.last().unwrap().average_utime,
-                benchmarks.last().unwrap().max_utime
-            );
-            println!(
-                "  System Time: {:.1}% (min: {:.2}ms, avg: {:.2}ms, max: {:.2}ms)",
-                benchmarks.last().unwrap().stime_percentage,
-                benchmarks.last().unwrap().min_stime,
-                benchmarks.last().unwrap().average_stime,
-                benchmarks.last().unwrap().max_stime
-            );
-            println!("\nMemory Usage:");
-            println!(
-                "  Min:     {:.1} MB",
-                benchmarks.last().unwrap().min_memory / 1024.0
-            );
-            println!(
-                "  Average: {:.1} MB",
-                benchmarks.last().unwrap().average_memory / 1024.0
-            );
-            println!(
-                "  Max:     {:.1} MB",
-                benchmarks.last().unwrap().max_memory / 1024.0
-            );
-            println!("\nExecution Time:");
-            println!(
-                "  Min:     {:.3} sec",
-                benchmarks.last().unwrap().min_duration
-            );
-            println!(
-                "  Average: {:.3} sec",
-                benchmarks.last().unwrap().average_duration
-            );
-            println!(
-                "  Max:     {:.3} sec",
-                benchmarks.last().unwrap().max_duration
-            );
-            println!("---------------------\n");
+            benchmarks.push(Benchmark::calculate(&process));
         }
+        let stat = Benchmark::average_stat(&benchmarks);
+        println!("\nBenchmark Statistics:");
+        println!("---------------------");
+        println!("CPU Usage:");
+        println!(
+            "  User Time:   {:.1}% (min: {:.2}ms, avg: {:.2}ms, max: {:.2}ms)",
+            stat.utime_percentage, stat.min_utime, stat.average_utime, stat.max_utime
+        );
+        println!(
+            "  System Time: {:.1}% (min: {:.2}ms, avg: {:.2}ms, max: {:.2}ms)",
+            stat.stime_percentage, stat.min_stime, stat.average_stime, stat.max_stime
+        );
+        println!("\nMemory Usage:");
+        println!("  Min:     {:.1} MB", stat.min_memory / 1024.0);
+        println!("  Average: {:.1} MB", stat.average_memory / 1024.0);
+        println!("  Max:     {:.1} MB", stat.max_memory / 1024.0);
+        println!("\nExecution Time:");
+        println!("  Min:     {:.3} sec", stat.min_duration);
+        println!("  Average: {:.3} sec", stat.average_duration);
+        println!("  Max:     {:.3} sec", stat.max_duration);
+        println!("---------------------\n");
     }
 }
 
